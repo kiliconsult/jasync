@@ -1,0 +1,20 @@
+rootProject.name = 'jasync'
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)    // Don't define repositories in subprojects, define them below
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    versionCatalogs {
+        libs {
+            library('slf4j-api', 'org.slf4j', 'slf4j-api').version('2.0.5')
+            bundle('slf4j', ['slf4j-api'])
+        }
+    }
+
+}
+
+include 'modules:core'
+include 'modules:environment:memory'
