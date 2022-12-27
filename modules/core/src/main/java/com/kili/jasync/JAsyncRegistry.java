@@ -5,7 +5,7 @@ import com.kili.jasync.environment.AsyncEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JAsync {
+public class JAsyncRegistry {
 
    private static Map<String, AsyncEnvironment> asyncEnvironments = new HashMap<>();
 
@@ -15,5 +15,10 @@ public class JAsync {
 
    public static AsyncEnvironment getEnvironment(String name) {
       return asyncEnvironments.get(name);
+   }
+
+   public static void destroyAllEnvironments() {
+      asyncEnvironments.values().forEach(AsyncEnvironment::close);
+      asyncEnvironments.clear();
    }
 }

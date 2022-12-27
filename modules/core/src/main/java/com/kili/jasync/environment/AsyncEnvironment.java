@@ -1,7 +1,8 @@
 package com.kili.jasync.environment;
 
+import com.kili.jasync.consumer.ConsumerConfiguration;
 import com.kili.jasync.JAsyncException;
-import com.kili.jasync.Consumer;
+import com.kili.jasync.consumer.Consumer;
 
 public interface AsyncEnvironment {
 

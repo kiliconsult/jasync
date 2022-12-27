@@ -1,4 +1,4 @@
-package com.kili.jasync.environment;
+package com.kili.jasync.consumer;
 
 
 public class ConsumerConfiguration {

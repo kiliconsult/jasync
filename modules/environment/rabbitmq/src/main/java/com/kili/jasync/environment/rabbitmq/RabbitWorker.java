@@ -1,6 +1,6 @@
 package com.kili.jasync.environment.rabbitmq;
 
-import com.kili.jasync.Consumer;
+import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.serialization.SerializationException;
 import com.kili.jasync.serialization.SerializationStrategy;

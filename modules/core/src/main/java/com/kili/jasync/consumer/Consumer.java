@@ -1,4 +1,4 @@
-package com.kili.jasync;
+package com.kili.jasync.consumer;
 
 import com.kili.jasync.fail.FailedItem;
 
@@ -11,6 +11,6 @@ public interface Consumer<T> {
    void consume(T workItem);
 
    default void handleUncaughtException(FailedItem<T> failedItem) {
-
+      // ignore
    }
 }

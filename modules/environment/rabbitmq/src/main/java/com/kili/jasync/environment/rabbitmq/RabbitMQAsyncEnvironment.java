@@ -1,9 +1,10 @@
 package com.kili.jasync.environment.rabbitmq;
 
-import com.kili.jasync.Consumer;
+import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
+import com.kili.jasync.consumer.NamedThreadFactory;
 import com.kili.jasync.environment.AsyncEnvironment;
-import com.kili.jasync.environment.ConsumerConfiguration;
+import com.kili.jasync.consumer.ConsumerConfiguration;
 import com.kili.jasync.serialization.SerializationStrategy;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -12,11 +13,8 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Environment that uses a RabbitMQ backend
@@ -26,34 +24,51 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
    private static final Logger logger = LoggerFactory.getLogger(RabbitMQAsyncEnvironment.class);
    private final Map<Class<? extends Consumer>, RabbitWorker<?>> workers = new HashMap<>();
    private final SerializationStrategy serializationStrategy;
-   private final ConnectionFactory factory;
-   private final GenericObjectPool<Channel> publishChannelPool;
+   private GenericObjectPool<Channel> publishChannelPool;
    private Set<Connection> allConnections = new HashSet<>();
-   private UUID uuid = UUID.randomUUID();
+   private UUID uuid;
+   private ConnectionFactory connectionFactory;
 
-   public RabbitMQAsyncEnvironment(RabbitMQConfiguration rabbitMQConfiguration) throws JAsyncException {
+   public static RabbitMQAsyncEnvironment create(RabbitMQConfiguration rabbitMQConfiguration) throws JAsyncException {
       Connection globalPublisherConnection;
-      factory = new ConnectionFactory();
+      var connectionFactory = new ConnectionFactory();
+      var connectionsSet = new HashSet<Connection>();
       try {
-         factory.setHost(rabbitMQConfiguration.getHostName());
-         factory.setPort(rabbitMQConfiguration.getPort());
-         factory.setUsername(rabbitMQConfiguration.getUserName());
-         factory.setPassword(rabbitMQConfiguration.getPassword());
-         factory.setVirtualHost(rabbitMQConfiguration.getVhost());
-         globalPublisherConnection = factory.newConnection();
-         allConnections.add(globalPublisherConnection);
+         connectionFactory.setHost(rabbitMQConfiguration.getHostName());
+         connectionFactory.setPort(rabbitMQConfiguration.getPort());
+         connectionFactory.setUsername(rabbitMQConfiguration.getUserName());
+         connectionFactory.setPassword(rabbitMQConfiguration.getPassword());
+         connectionFactory.setVirtualHost(rabbitMQConfiguration.getVhost());
+         globalPublisherConnection = connectionFactory.newConnection();
+         connectionsSet.add(globalPublisherConnection);
       } catch (Exception e) {
          throw new JAsyncException("Unable to create rabbit connection", e);
       }
 
-      publishChannelPool = new GenericObjectPool<>(new RabbitChannelFactory(globalPublisherConnection));
+      var publishChannelPool = new GenericObjectPool<>(new RabbitChannelFactory(globalPublisherConnection));
       publishChannelPool.setMinIdle(1);
       publishChannelPool.setMaxIdle(3);
       publishChannelPool.setMaxTotal(5);
 
-      this.serializationStrategy = rabbitMQConfiguration.getSerializationStrategy();
+      var serializationStrategy = rabbitMQConfiguration.getSerializationStrategy();
 
+      var uuid = UUID.randomUUID();
+      var environment = new RabbitMQAsyncEnvironment(uuid, connectionFactory, connectionsSet, serializationStrategy, publishChannelPool);
       logger.info("initialized environment " + uuid);
+      return environment;
+   }
+
+   private RabbitMQAsyncEnvironment(
+         UUID uuid,
+         ConnectionFactory connectionFactory,
+         HashSet<Connection> connectionsSet,
+         SerializationStrategy serializationStrategy,
+         GenericObjectPool<Channel> publishChannelPool) throws JAsyncException {
+      this.uuid = uuid;
+      this.connectionFactory = connectionFactory;
+      this.allConnections = connectionsSet;
+      this.serializationStrategy = serializationStrategy;
+      this.publishChannelPool = publishChannelPool;
    }
 
    @Override
@@ -68,8 +83,9 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
                configuration.getMaxConsumers(),
                0,
                TimeUnit.MILLISECONDS,
-               new LinkedBlockingQueue<Runnable>());
-         Connection consumerConnection = factory.newConnection(executorService);
+               new LinkedBlockingQueue<>(),
+               new NamedThreadFactory(worker.getClass().getSimpleName()));
+         Connection consumerConnection = connectionFactory.newConnection(executorService);
          allConnections.add(consumerConnection);
          consumerChannel = consumerConnection.createChannel();
       } catch (Exception e) {

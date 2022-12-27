@@ -1,5 +1,6 @@
 package com.kili.jasync;
 
+import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.fail.FailedItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

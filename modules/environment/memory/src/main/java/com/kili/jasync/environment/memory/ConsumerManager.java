@@ -1,25 +1,29 @@
 package com.kili.jasync.environment.memory;
 
-import com.kili.jasync.Consumer;
+import com.kili.jasync.consumer.Consumer;
+import com.kili.jasync.consumer.NamedThreadFactory;
 import com.kili.jasync.fail.FailedItem;
 
 import java.util.concurrent.*;
 
-public class ConsumerManager {
+class ConsumerManager<T> {
 
+   private Consumer<T> consumer;
    private final ThreadPoolExecutor executorService;
 
-   public ConsumerManager(int maxConsumers) {
+   public ConsumerManager(Consumer<T> consumer, int maxConsumers) {
+      this.consumer = consumer;
       executorService = new ThreadPoolExecutor(
-            1,
+            maxConsumers,
             maxConsumers,
             0L,
             TimeUnit.MILLISECONDS,
-            new SynchronousQueue<>());
+            new SynchronousQueue<>(),
+            new NamedThreadFactory(consumer.getClass().getSimpleName()));
       executorService.prestartAllCoreThreads();
    }
 
-   public <T> void offerConsumers(Consumer<T> consumer, T workItem) throws RejectedExecutionException {
+   public void offerConsumers(T workItem) throws RejectedExecutionException {
       executorService.submit(() -> {
 
          try {

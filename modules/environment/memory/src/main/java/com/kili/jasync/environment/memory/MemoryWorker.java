@@ -1,6 +1,6 @@
 package com.kili.jasync.environment.memory;
 
-import com.kili.jasync.Consumer;
+import com.kili.jasync.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +12,10 @@ class MemoryWorker<T> implements Runnable {
 
    private static Logger logger = LoggerFactory.getLogger(MemoryWorker.class);
    private Consumer<T> worker;
-   private ConsumerManager consumerManager;
+   private ConsumerManager<T> consumerManager;
    private LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
 
-   public MemoryWorker(Consumer<T> worker, ConsumerManager consumerManager) {
+   public MemoryWorker(Consumer<T> worker, ConsumerManager<T> consumerManager) {
       this.worker = worker;
       this.consumerManager = consumerManager;
    }
@@ -30,7 +30,7 @@ class MemoryWorker<T> implements Runnable {
          while (true) {
             var workItem = queue.peek();
             if (workItem != null) {
-               consumerManager.offerConsumers(worker, workItem);
+               consumerManager.offerConsumers(workItem);
                queue.remove();
             }
          }
