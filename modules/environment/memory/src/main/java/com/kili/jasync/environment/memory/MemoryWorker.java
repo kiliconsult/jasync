@@ -1,16 +1,19 @@
 package com.kili.jasync.environment.memory;
 
 import com.kili.jasync.Consumer;
-import com.kili.jasync.environment.ConsumerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 
 class MemoryWorker<T> implements Runnable {
 
+
+   private static Logger logger = LoggerFactory.getLogger(MemoryWorker.class);
    private Consumer<T> worker;
    private ConsumerManager consumerManager;
-   private BlockingDeque<T> queue = new LinkedBlockingDeque<>();
+   private LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
 
    public MemoryWorker(Consumer<T> worker, ConsumerManager consumerManager) {
       this.worker = worker;
@@ -25,11 +28,22 @@ class MemoryWorker<T> implements Runnable {
    public void run() {
       try {
          while (true) {
-            var workItem = queue.take();
-            consumerManager.offerConsumers(worker, workItem);
+            var workItem = queue.peek();
+            if (workItem != null) {
+               consumerManager.offerConsumers(worker, workItem);
+               queue.remove();
+            }
          }
-      } catch (InterruptedException e) {
-         Thread.currentThread().interrupt();
+      } catch (RejectedExecutionException e) {
+         try {
+            Thread.sleep(10);
+         } catch (InterruptedException ex) {
+            logger.warn("Interrupted!. Stopping worker");
+         }
       }
+   }
+
+   public void close() {
+      consumerManager.close();
    }
 }

@@ -18,9 +18,9 @@ public class Main {
       }
    }
 
-   private static void initialize() {
+   private static void initialize() throws JAsyncException {
       AsyncEnvironment asyncEnvironment = new MemoryAsyncEnvironment();
-      asyncEnvironment.initializeWorker(new ExampleConsumer(), new ConsumerConfiguration.Builder().build());
+      asyncEnvironment.initializeWorker(new ExampleConsumer(), WorkItem.class, new ConsumerConfiguration.Builder().build());
       JAsync.registerEnvironment("memory", asyncEnvironment);
    }
 }

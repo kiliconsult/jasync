@@ -8,9 +8,10 @@ public interface AsyncEnvironment {
    /**
     * Initialize a worker in this environment
     * @param worker the worker
+    * @param itemClass the work item type
     * @param configuration configuration of the worker
     */
-   void initializeWorker(Consumer<?> worker, ConsumerConfiguration configuration);
+   <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, ConsumerConfiguration configuration) throws JAsyncException;
 
    /**
     * Add work item to a async queue
@@ -20,4 +21,6 @@ public interface AsyncEnvironment {
     * @throws JAsyncException if a worker of the given type is not found
     */
    <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException;
+
+   void close();
 }

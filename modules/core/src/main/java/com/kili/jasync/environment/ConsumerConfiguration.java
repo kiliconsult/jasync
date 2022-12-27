@@ -1,29 +1,28 @@
 package com.kili.jasync.environment;
 
-import com.kili.jasync.transaction.NoTransactionFactory;
-import com.kili.jasync.transaction.TransactionFactory;
 
 public class ConsumerConfiguration {
-   private TransactionFactory transactionFactory;
-   private int maxWorkers;
+   private int maxConsumers;
 
    private ConsumerConfiguration() {
    }
 
-   public TransactionFactory getTransactionFactory() {
-      return transactionFactory;
-   }
-
-   public int getMaxWorkers() {
-      return maxWorkers;
+   public int getMaxConsumers() {
+      return maxConsumers;
    }
 
    public static class Builder {
 
+      private int maxConsumers = 1;
+
+      public Builder setMaxConsumers(int maxConsumers) {
+         this.maxConsumers = maxConsumers;
+         return this;
+      }
+
       public ConsumerConfiguration build() {
          ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
-         consumerConfiguration.maxWorkers = 1;
-         consumerConfiguration.transactionFactory = NoTransactionFactory::new;
+         consumerConfiguration.maxConsumers = maxConsumers;
          return consumerConfiguration;
       }
    }

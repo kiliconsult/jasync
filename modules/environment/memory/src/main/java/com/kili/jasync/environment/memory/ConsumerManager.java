@@ -1,40 +1,33 @@
-package com.kili.jasync.environment;
+package com.kili.jasync.environment.memory;
 
 import com.kili.jasync.Consumer;
 import com.kili.jasync.fail.FailedItem;
-import com.kili.jasync.transaction.Transaction;
-import com.kili.jasync.transaction.TransactionFactory;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ConsumerManager {
 
-   private TransactionFactory transactionFactory;
    private final ThreadPoolExecutor executorService;
 
-   public ConsumerManager(TransactionFactory transactionFactory, int maxConsumers) {
-      this.transactionFactory = transactionFactory;
+   public ConsumerManager(int maxConsumers) {
       executorService = new ThreadPoolExecutor(
             1,
             maxConsumers,
             0L,
             TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(5 * maxConsumers));
+            new SynchronousQueue<>());
+      executorService.prestartAllCoreThreads();
    }
 
-   public <T> void offerConsumers(Consumer<T> consumer, T workItem) {
+   public <T> void offerConsumers(Consumer<T> consumer, T workItem) throws RejectedExecutionException {
       executorService.submit(() -> {
 
-         Transaction transaction = transactionFactory.initTransaction();
-         try (transaction) {
+         try {
             consumer.consume(workItem);
-            transaction.commit();
          } catch (Exception e) {
             try {
-               transaction.rollback();
-               consumer.handleUncaughtException(new FailedItem<>(workItem, e));
+               FailedItem<T> failedItem = new FailedItem<>(workItem, e);
+               consumer.handleUncaughtException(failedItem);
             } catch (Exception ex) {
                throw new RuntimeException(ex);
             }
@@ -49,5 +42,9 @@ public class ConsumerManager {
     */
    public void updateMaxNumberOfConsumers(int maxNumberOfConsumers) {
       executorService.setMaximumPoolSize(maxNumberOfConsumers);
+   }
+
+   public void close() {
+      executorService.shutdown();
    }
 }

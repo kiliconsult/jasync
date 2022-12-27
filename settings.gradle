@@ -9,6 +9,16 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         libs {
+            library('pooling', 'org.apache.commons', 'commons-pool2').version('2.11.1')
+
+            library('rabbitmq.client', 'com.rabbitmq', 'amqp-client').version('5.16.0')
+
+            def jacksonVersion = '2.14.1'
+            library('jackson.core', 'com.fasterxml.jackson.core', 'jackson-core').version(jacksonVersion)
+            library('jackson.annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').version(jacksonVersion)
+            library('jackson.databind', 'com.fasterxml.jackson.core', 'jackson-databind').version(jacksonVersion)
+            bundle('jackson', ['jackson.core', 'jackson.annotations', 'jackson.databind'])
+
             library('slf4j-api', 'org.slf4j', 'slf4j-api').version('2.0.5')
             bundle('slf4j', ['slf4j-api'])
         }
@@ -18,3 +28,4 @@ dependencyResolutionManagement {
 
 include 'modules:core'
 include 'modules:environment:memory'
+include 'modules:environment:rabbitmq'

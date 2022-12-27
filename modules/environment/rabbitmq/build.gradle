@@ -1,0 +1,32 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'com.kili.jasync.environment'
+
+
+java {
+    // Generate sources and javadoc jars when publishing
+    withSourcesJar()
+}
+
+dependencies {
+    implementation(project(':modules:core'))
+
+    implementation(libs.bundles.slf4j)
+    implementation(libs.rabbitmq.client)
+    implementation(libs.pooling)
+
+    testImplementation "org.testcontainers:testcontainers:1.17.6"
+    testImplementation 'org.testcontainers:rabbitmq:1.17.6'
+    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testRuntimeOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.19.0'
+    testRuntimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.19.0'
+}
+
+test {
+    useJUnitPlatform()
+}
