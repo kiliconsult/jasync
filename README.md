@@ -8,7 +8,15 @@ or communication.
 
 ## Getting started
 
-Creating the consumer that should handle our work items:
+We will create a simple work item and a worker that logs a message asynchronously.
+
+The work items is a simple record:
+
+```java
+public record WorkItem(String message) { }
+```
+
+And the consumer is an implementation of the Consumer interface:
 ```java
 import com.kili.jasync.consumer.Consumer;
 import org.slf4j.Logger;
