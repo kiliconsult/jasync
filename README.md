@@ -8,8 +8,25 @@ or communication.
 
 ## Getting started
 
-Register into a memory environment:
+Creating the consumer that should handle our work items:
+```java
+import com.kili.jasync.consumer.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class ExampleConsumer implements Consumer<WorkItem> {
+
+   private static final Logger logger = LoggerFactory.getLogger(ExampleConsumer.class);
+
+   @Override
+   public void consume(WorkItem workItem) {
+      logger.info(workItem.message());
+   }
+}
+```
+
+Register the worker on an environment. Here we choose the memory environment, but this could also be
+the RabbitMQ environment:
 ```java
 void initialize() throws JAsyncException {
    AsyncEnvironment asyncEnvironment = new MemoryAsyncEnvironment();
