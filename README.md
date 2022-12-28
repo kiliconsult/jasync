@@ -1,4 +1,4 @@
-[Build workflow]!(https://github.com/kiliconsult/jasync/actions/workflows/gradle.yml/badge.svg)
+![Build status](https://github.com/kiliconsult/jasync/actions/workflows/gradle.yml/badge.svg)
 
 # JAsync
 
