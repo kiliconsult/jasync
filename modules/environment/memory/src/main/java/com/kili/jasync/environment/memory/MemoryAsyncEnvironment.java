@@ -44,6 +44,8 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
 
    @Override
    public void close() {
-
+      for (MemoryWorker<?> worker : workers.values()) {
+         worker.close();
+      }
    }
 }

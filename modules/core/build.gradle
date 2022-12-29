@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id "java-test-fixtures"
     id 'maven-publish'
 }
 
@@ -14,7 +15,8 @@ java {
 dependencies {
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.slf4j)
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testFixturesImplementation(libs.bundles.slf4j)
+    testFixturesApi  'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 

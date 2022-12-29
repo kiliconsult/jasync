@@ -1,5 +1,6 @@
 package com.kili.jasync.environment.memory;
 
+import com.kili.jasync.JAsyncException;
 import com.kili.jasync.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,16 +12,20 @@ class MemoryWorker<T> implements Runnable {
 
 
    private static Logger logger = LoggerFactory.getLogger(MemoryWorker.class);
-   private Consumer<T> worker;
-   private ConsumerManager<T> consumerManager;
-   private LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
+   private final Consumer<T> worker;
+   private final ConsumerManager<T> consumerManager;
+   private final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
+   private boolean closed;
 
    public MemoryWorker(Consumer<T> worker, ConsumerManager<T> consumerManager) {
       this.worker = worker;
       this.consumerManager = consumerManager;
    }
 
-   public void queueWorkItem(T workItem) {
+   public void queueWorkItem(T workItem) throws JAsyncException {
+      if (closed) {
+         throw new JAsyncException("Worker is closed!");
+      }
       queue.add(workItem);
    }
 
@@ -44,6 +49,8 @@ class MemoryWorker<T> implements Runnable {
    }
 
    public void close() {
+      closed = true;
       consumerManager.close();
+
    }
 }

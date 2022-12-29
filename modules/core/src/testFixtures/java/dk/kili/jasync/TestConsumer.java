@@ -1,4 +1,4 @@
-package com.kili.jasync.environment.rabbitmq;
+package dk.kili.jasync;
 
 import com.kili.jasync.consumer.Consumer;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.kili.jasync.environment.rabbitmq;
+package dk.kili.jasync;
 
 public record TestMessage(String message) {
 
