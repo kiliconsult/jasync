@@ -6,6 +6,11 @@ Working with async tool like RabbitMQ or Kafka introduces lots of new ways to fa
 This project aims at reducing the cognitive load for developers working with asynchronous tasks 
 or communication.
 
+## Supported environments
+- Memory
+- RabbitMQ
+- Kafka (Coming up)
+
 ## Getting started
 
 We will create a simple work item and a worker that logs a message asynchronously.
@@ -33,8 +38,8 @@ public class ExampleConsumer implements Consumer<WorkItem> {
 }
 ```
 
-Register the worker on an environment. Here we choose the memory environment, but this could also be
-the RabbitMQ environment:
+Register the worker on an environment. Here we choose the memory environment, but this could be
+any environment:
 ```java
 void initialize() throws JAsyncException {
    AsyncEnvironment asyncEnvironment = new MemoryAsyncEnvironment();
