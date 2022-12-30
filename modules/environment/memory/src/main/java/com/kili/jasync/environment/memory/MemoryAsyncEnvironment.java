@@ -25,7 +25,7 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
    public <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, ConsumerConfiguration configuration) {
       logger.info("Initializing memory worker {}", worker);
 
-      var consumerManager = new ConsumerManager<>(worker, configuration.getMaxConsumers());
+      var consumerManager = new ConsumerManager<>(worker, configuration.getNumberOfConsumers());
 
       var memoryWorker = new MemoryWorker<>(worker, consumerManager);
       workers.put(worker.getClass(), memoryWorker);

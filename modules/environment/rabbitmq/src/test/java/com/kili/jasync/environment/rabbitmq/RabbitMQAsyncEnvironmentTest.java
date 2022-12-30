@@ -3,6 +3,7 @@ package com.kili.jasync.environment.rabbitmq;
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.environment.AsyncEnvironment;
 import dk.kili.jasync.AbstractWorkerContractTest;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -28,5 +29,15 @@ class RabbitMQAsyncEnvironmentTest extends AbstractWorkerContractTest {
             .build();
       RabbitMQAsyncEnvironment asyncEnvironment = RabbitMQAsyncEnvironment.create(rabbitMQConfiguration);
       return asyncEnvironment;
+   }
+
+   @Test
+   public void testCustomSerializer() throws JAsyncException, InterruptedException {
+      // TODO
+   }
+
+   @Test
+   public void testWorkerPicksUpPreQueuedMessages() throws JAsyncException, InterruptedException {
+      // TODO
    }
 }

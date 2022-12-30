@@ -79,8 +79,8 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
       ThreadPoolExecutor executorService;
       try {
          executorService = new ThreadPoolExecutor(
-               configuration.getMaxConsumers(),
-               configuration.getMaxConsumers(),
+               configuration.getNumberOfConsumers(),
+               configuration.getNumberOfConsumers(),
                0,
                TimeUnit.MILLISECONDS,
                new LinkedBlockingQueue<>(),

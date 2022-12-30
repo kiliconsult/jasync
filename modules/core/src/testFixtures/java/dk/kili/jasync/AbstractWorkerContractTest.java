@@ -6,7 +6,7 @@ import com.kili.jasync.environment.AsyncEnvironment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.time.Duration;
 
 /**
  * Tests that a worker has the expected functionality. Environments can provide additional functionality
@@ -18,41 +18,39 @@ public abstract class AbstractWorkerContractTest {
 
    @Test
    public void testEnvironmentStartAndClose() throws JAsyncException {
-      AsyncEnvironment asyncEnvironment = createEnvironment();
-      asyncEnvironment.close();
+      try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
+         // intentionally empty
+      }
    }
 
    @Test
    public void testWorkerHandlesAllMessages() throws JAsyncException, InterruptedException {
-      AsyncEnvironment asyncEnvironment = createEnvironment();
+      try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
+         TestConsumer worker = new TestConsumer();
+         asyncEnvironment.initializeWorker(
+               worker,
+               TestMessage.class,
+               new ConsumerConfiguration.Builder().setNumberOfConsumers(10).build());
 
-      TestConsumer worker = new TestConsumer();
-      asyncEnvironment.initializeWorker(
-            worker,
-            TestMessage.class,
-            new ConsumerConfiguration.Builder().setMaxConsumers(10).build());
-
-      int messagesCount = 100;
-      for (int i = 0; i < messagesCount; i++) {
-         asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
+         int messagesCount = 100;
+         for (int i = 0; i < messagesCount; i++) {
+            asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
+         }
+         TestHelper.wait(messagesCount, worker::getCount, Duration.ofSeconds(5));
       }
-
-      Thread.sleep(1000);
-      assertEquals(messagesCount, worker.getCount());
-
-      asyncEnvironment.close();
    }
 
    @Test
    public void testAddWorkItemFailsOnClosedEnvironment() throws JAsyncException, InterruptedException {
-      AsyncEnvironment asyncEnvironment = createEnvironment();
-
       TestConsumer worker = new TestConsumer();
-      asyncEnvironment.initializeWorker(
-            worker,
-            TestMessage.class,
-            new ConsumerConfiguration.Builder().setMaxConsumers(10).build());
-      asyncEnvironment.close();
+
+      AsyncEnvironment asyncEnvironment = createEnvironment();
+      try (asyncEnvironment) {
+         asyncEnvironment.initializeWorker(
+               worker,
+               TestMessage.class,
+               new ConsumerConfiguration.Builder().setNumberOfConsumers(10).build());
+      }
 
       try {
          asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message should never be added"));
@@ -66,17 +64,23 @@ public abstract class AbstractWorkerContractTest {
    }
 
    @Test
-   public void testWorkerPicksUpPreQueuedMessages() throws JAsyncException, InterruptedException {
-      // TODO
-   }
-
-   @Test
    public void testNumberOfWorkerConsumers() throws JAsyncException, InterruptedException {
-      // TODO
-   }
+      try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
 
-   @Test
-   public void testCustomSerializer() throws JAsyncException, InterruptedException {
-      // TODO
+         int numberOfConsumers = 10;
+
+         TestConsumer worker = new TestConsumer();
+         asyncEnvironment.initializeWorker(
+               worker,
+               TestMessage.class,
+               new ConsumerConfiguration.Builder().setNumberOfConsumers(numberOfConsumers).build());
+
+         int messagesCount = 1000;
+         for (int i = 0; i < messagesCount; i++) {
+            asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
+         }
+
+         TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(5));
+      }
    }
 }

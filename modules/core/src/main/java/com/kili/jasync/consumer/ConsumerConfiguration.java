@@ -2,27 +2,27 @@ package com.kili.jasync.consumer;
 
 
 public class ConsumerConfiguration {
-   private int maxConsumers;
+   private int numberOfConsumers;
 
    private ConsumerConfiguration() {
    }
 
-   public int getMaxConsumers() {
-      return maxConsumers;
+   public int getNumberOfConsumers() {
+      return numberOfConsumers;
    }
 
    public static class Builder {
 
-      private int maxConsumers = 1;
+      private int numberOfConsumers = 1;
 
-      public Builder setMaxConsumers(int maxConsumers) {
-         this.maxConsumers = maxConsumers;
+      public Builder setNumberOfConsumers(int maxConsumers) {
+         this.numberOfConsumers = maxConsumers;
          return this;
       }
 
       public ConsumerConfiguration build() {
          ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
-         consumerConfiguration.maxConsumers = maxConsumers;
+         consumerConfiguration.numberOfConsumers = numberOfConsumers;
          return consumerConfiguration;
       }
    }

@@ -11,11 +11,11 @@ class ConsumerManager<T> {
    private Consumer<T> consumer;
    private final ThreadPoolExecutor executorService;
 
-   public ConsumerManager(Consumer<T> consumer, int maxConsumers) {
+   public ConsumerManager(Consumer<T> consumer, int numberOfConsumers) {
       this.consumer = consumer;
       executorService = new ThreadPoolExecutor(
-            maxConsumers,
-            maxConsumers,
+            numberOfConsumers,
+            numberOfConsumers,
             0L,
             TimeUnit.MILLISECONDS,
             new SynchronousQueue<>(),
