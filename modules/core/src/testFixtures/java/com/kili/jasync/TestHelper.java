@@ -1,4 +1,4 @@
-package dk.kili.jasync;
+package com.kili.jasync;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

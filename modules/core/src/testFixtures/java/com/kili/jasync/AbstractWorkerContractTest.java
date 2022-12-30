@@ -1,6 +1,5 @@
-package dk.kili.jasync;
+package com.kili.jasync;
 
-import com.kili.jasync.JAsyncException;
 import com.kili.jasync.consumer.ConsumerConfiguration;
 import com.kili.jasync.environment.AsyncEnvironment;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +35,7 @@ public abstract class AbstractWorkerContractTest {
          for (int i = 0; i < messagesCount; i++) {
             asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
          }
-         TestHelper.wait(messagesCount, worker::getCount, Duration.ofSeconds(5));
+         TestHelper.wait(messagesCount, worker::getCount, Duration.ofSeconds(30));
       }
    }
 

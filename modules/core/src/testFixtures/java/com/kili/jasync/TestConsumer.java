@@ -1,4 +1,4 @@
-package dk.kili.jasync;
+package com.kili.jasync;
 
 import com.kili.jasync.consumer.Consumer;
 import org.slf4j.Logger;

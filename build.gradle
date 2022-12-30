@@ -3,18 +3,3 @@ plugins {
 }
 
 group 'com.kili.jasync'
-
-dependencies {
-    implementation(project(':modules:core'))
-    implementation(project(':modules:environment:memory'))
-    implementation(libs.bundles.slf4j)
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.19.0'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.19.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-
-test {
-    useJUnitPlatform()
-}

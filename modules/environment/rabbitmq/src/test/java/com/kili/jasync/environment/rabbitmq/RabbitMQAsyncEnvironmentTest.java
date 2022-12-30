@@ -2,7 +2,7 @@ package com.kili.jasync.environment.rabbitmq;
 
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.environment.AsyncEnvironment;
-import dk.kili.jasync.AbstractWorkerContractTest;
+import com.kili.jasync.AbstractWorkerContractTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.RabbitMQContainer;
