@@ -31,20 +31,29 @@ class MemoryWorker<T> implements Runnable {
 
    @Override
    public void run() {
+      runFeeder();
+   }
+
+   private void runFeeder() {
       try {
          while (true) {
             var workItem = queue.peek();
             if (workItem != null) {
                consumerManager.offerConsumers(workItem);
                queue.remove();
+            } else {
+               Thread.sleep(10);
             }
          }
       } catch (RejectedExecutionException e) {
          try {
             Thread.sleep(10);
+            runFeeder();
          } catch (InterruptedException ex) {
-            logger.warn("Interrupted!. Stopping worker");
+            logger.warn("Interrupted!. Stopping feeder");
          }
+      } catch (InterruptedException e) {
+         logger.warn("Interrupted!. Stopping feeder");
       }
    }
 
