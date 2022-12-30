@@ -1,6 +1,6 @@
 ![Build status](https://github.com/kiliconsult/jasync/actions/workflows/gradle.yml/badge.svg)
 
-![Logo](https://imgur.com/a/jxKuDZt)
+![Logo](https://i.imgur.com/QyFxWBc.png)
 
 Working with async tool like RabbitMQ or Kafka introduces lots of new ways to fail as a developer. 
 This project aims at reducing the cognitive load for developers working with asynchronous tasks 
