@@ -66,7 +66,7 @@ public abstract class AbstractWorkerContractTest {
    public void testNumberOfWorkerConsumers() throws JAsyncException, InterruptedException {
       try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
 
-         int numberOfConsumers = 10;
+         int numberOfConsumers = 4;
 
          TestConsumer worker = new TestConsumer();
          asyncEnvironment.initializeWorker(
@@ -79,7 +79,7 @@ public abstract class AbstractWorkerContractTest {
             asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
          }
 
-         TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(5));
+         TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(30));
       }
    }
 }
