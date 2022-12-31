@@ -25,7 +25,7 @@ public abstract class AbstractWorkerContractTest {
    @Test
    public void testWorkerHandlesAllMessages() throws JAsyncException, InterruptedException {
       try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
-         TestConsumer worker = new TestConsumer();
+         TestConsumer worker = new TestConsumer() {};
          asyncEnvironment.initializeWorker(
                worker,
                TestMessage.class,
@@ -33,7 +33,7 @@ public abstract class AbstractWorkerContractTest {
 
          int messagesCount = 100;
          for (int i = 0; i < messagesCount; i++) {
-            asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
+            asyncEnvironment.addWorkItem(worker.getClass(), new TestMessage("Message " + i));
          }
          TestHelper.wait(messagesCount, worker::getCount, Duration.ofSeconds(30));
       }
@@ -41,7 +41,7 @@ public abstract class AbstractWorkerContractTest {
 
    @Test
    public void testAddWorkItemFailsOnClosedEnvironment() throws JAsyncException, InterruptedException {
-      TestConsumer worker = new TestConsumer();
+      TestConsumer worker = new TestConsumer() {};
 
       AsyncEnvironment asyncEnvironment = createEnvironment();
       try (asyncEnvironment) {
@@ -52,7 +52,7 @@ public abstract class AbstractWorkerContractTest {
       }
 
       try {
-         asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message should never be added"));
+         asyncEnvironment.addWorkItem(worker.getClass(), new TestMessage("Message should never be added"));
          Assertions.fail("Should never reach this statement");
       } catch (JAsyncException ignore) {
       } catch (Exception e) {
@@ -68,7 +68,7 @@ public abstract class AbstractWorkerContractTest {
 
          int numberOfConsumers = 4;
 
-         TestConsumer worker = new TestConsumer();
+         TestConsumer worker = new TestConsumer() {};
          asyncEnvironment.initializeWorker(
                worker,
                TestMessage.class,
@@ -76,7 +76,7 @@ public abstract class AbstractWorkerContractTest {
 
          int messagesCount = 1000;
          for (int i = 0; i < messagesCount; i++) {
-            asyncEnvironment.addWorkItem(TestConsumer.class, new TestMessage("Message " + i));
+            asyncEnvironment.addWorkItem(worker.getClass(), new TestMessage("Message " + i));
          }
 
          TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(30));
