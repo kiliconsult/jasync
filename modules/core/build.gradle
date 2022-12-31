@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id "java-test-fixtures"
     id 'maven-publish'
+    id 'jacoco'
 }
 
 group 'com.kili.jasync'
@@ -22,4 +23,11 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
 }

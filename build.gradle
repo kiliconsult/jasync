@@ -1,5 +1,16 @@
 plugins {
     id 'java'
+    id 'jacoco-report-aggregation'
 }
 
 group 'com.kili.jasync'
+
+dependencies {
+    implementation project(':modules:core')
+    implementation project(':modules:environment:memory')
+    implementation project(':modules:environment:rabbitmq')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+}
