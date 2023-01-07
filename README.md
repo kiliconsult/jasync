@@ -55,3 +55,23 @@ void publish(String message) throws JAsyncException {
    memory.addWorkItem(ExampleConsumer.class, new WorkItem(message));
 }
 ```
+
+
+## Using RabbitMQ
+
+It is easy to use change the environment to RabbitMQ. Just change the AsyncEnvironment in the 
+[Getting Started](#getting-started) to use the RabbitMQAsyncEnvironment.
+
+```java
+public AsyncEnvironment createEnvironment() throws JAsyncException {
+   RabbitMQConfiguration rabbitMQConfiguration = new RabbitMQConfiguration.Builder(
+      rabbitMQContainer.getAdminUsername(),
+      rabbitMQContainer.getAdminPassword(),
+      rabbitMQContainer.getHost())
+   .setPort(rabbitMQContainer.getAmqpPort())
+   .build();
+   return RabbitMQAsyncEnvironment.create(rabbitMQConfiguration);
+}
+```
+
+This environment is by default set up with durable queues to remember messages between startup and close downs.
