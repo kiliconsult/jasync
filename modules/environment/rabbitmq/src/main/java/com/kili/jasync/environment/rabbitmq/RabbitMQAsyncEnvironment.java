@@ -1,5 +1,6 @@
 package com.kili.jasync.environment.rabbitmq;
 
+import com.kili.jasync.QueueInfo;
 import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.consumer.NamedThreadFactory;
@@ -109,6 +110,15 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
          throw new JAsyncException(workerType + " is not registered as a worker!");
       }
       worker.queueWorkItem(workItem);
+   }
+
+   @Override
+   public QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException {
+      var consumer = (RabbitWorker<?>) workers.get(consumerType);
+      if (consumer == null) {
+         throw new JAsyncException(consumerType + " is not registered!");
+      }
+      return new QueueInfo(consumer.getQueueSize());
    }
 
    @Override

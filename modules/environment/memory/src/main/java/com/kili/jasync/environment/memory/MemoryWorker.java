@@ -57,6 +57,10 @@ class MemoryWorker<T> implements Runnable {
       }
    }
 
+   public int getQueueSize() {
+      return queue.size();
+   }
+
    public void close() {
       closed = true;
       consumerManager.close();

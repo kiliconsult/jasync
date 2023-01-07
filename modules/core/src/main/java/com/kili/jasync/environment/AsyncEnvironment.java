@@ -1,5 +1,6 @@
 package com.kili.jasync.environment;
 
+import com.kili.jasync.QueueInfo;
 import com.kili.jasync.consumer.ConsumerConfiguration;
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.consumer.Consumer;
@@ -22,6 +23,12 @@ public interface AsyncEnvironment extends AutoCloseable {
     * @throws JAsyncException if a worker of the given type is not found
     */
    <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException;
+
+   /**
+    * Get information about the queue for a given consumer
+    * @param consumerType the type of the consumer
+    */
+   QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException;
 
    void close();
 }

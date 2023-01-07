@@ -1,5 +1,6 @@
 package com.kili.jasync.environment.memory;
 
+import com.kili.jasync.QueueInfo;
 import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
 import com.kili.jasync.environment.AsyncEnvironment;
@@ -43,9 +44,19 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
+   public QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException {
+      var consumer = (MemoryWorker<?>) workers.get(consumerType);
+      if (consumer == null) {
+         throw new JAsyncException(consumer + " is not registered!");
+      }
+      return new QueueInfo(consumer.getQueueSize());
+   }
+
+   @Override
    public void close() {
       for (MemoryWorker<?> worker : workers.values()) {
          worker.close();
       }
+      workers.clear();
    }
 }

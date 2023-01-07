@@ -8,7 +8,7 @@ import com.kili.jasync.fail.FailedItem;
  */
 public interface Consumer<T> {
 
-   void consume(T workItem);
+   void consume(T workItem) throws Exception;
 
    default void handleUncaughtException(FailedItem<T> failedItem) {
       // ignore

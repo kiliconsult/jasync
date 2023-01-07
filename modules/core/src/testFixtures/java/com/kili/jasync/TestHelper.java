@@ -19,4 +19,15 @@ public class TestHelper {
       }
       throw new RuntimeException("Check did not finish in time, expected " + expected + " but was " + latestCheckValue);
    }
+
+   public static void wait(Supplier<Boolean> check, Duration duration) throws InterruptedException {
+      LocalDateTime stopWaiting = LocalDateTime.now().plus(duration);
+      while (LocalDateTime.now().isBefore(stopWaiting)) {
+         if (check.get()) {
+            return;
+         }
+         Thread.sleep(10);
+      }
+      throw new RuntimeException("Check did not finish in time");
+   }
 }
