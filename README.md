@@ -15,7 +15,7 @@ or communication.
 
 We will create a simple work item and a worker that logs a message asynchronously.
 
-The work items is a simple record:
+The work items are simple records/beans:
 
 ```java
 public record WorkItem(String message) { }
@@ -73,5 +73,8 @@ public AsyncEnvironment createEnvironment() throws JAsyncException {
    return RabbitMQAsyncEnvironment.create(rabbitMQConfiguration);
 }
 ```
+
+RabbitMQ environments also works across JVMs. You can have multiple instances of your application sharing the work of 
+the same worker queues.
 
 This environment is by default set up with durable queues to remember messages between startup and close downs.
