@@ -1,6 +1,5 @@
 package com.kili.jasync;
 
-import com.kili.jasync.consumer.MessageHandlerConfiguration;
 import com.kili.jasync.consumer.WorkerConfiguration;
 import com.kili.jasync.environment.AsyncEnvironment;
 import org.junit.jupiter.api.Assertions;

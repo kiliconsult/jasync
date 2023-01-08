@@ -2,9 +2,9 @@
 
 ![Logo](https://i.imgur.com/QyFxWBc.png)
 
-Working with async tool like RabbitMQ or Kafka introduces lots of new ways to fail as a developer. 
-This project aims at reducing the cognitive load for developers working with asynchronous tasks 
-or communication.
+Working with async tool like RabbitMQ or Kafka introduces yet another steep learning curve for developers. 
+Using messaging for communication between services or using background tasks should be simple.
+This project aims at reducing the cognitive load for developers working with these things.
 
 ## Supported environments
 - Memory
