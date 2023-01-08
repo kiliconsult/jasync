@@ -9,7 +9,6 @@ group 'com.kili.jasync'
 
 
 java {
-    // Generate sources and javadoc jars when publishing
     withSourcesJar()
 }
 
