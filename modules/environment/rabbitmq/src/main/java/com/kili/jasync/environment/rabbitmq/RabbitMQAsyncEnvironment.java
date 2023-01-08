@@ -3,9 +3,10 @@ package com.kili.jasync.environment.rabbitmq;
 import com.kili.jasync.QueueInfo;
 import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
+import com.kili.jasync.consumer.MessageHandlerConfiguration;
 import com.kili.jasync.consumer.NamedThreadFactory;
 import com.kili.jasync.environment.AsyncEnvironment;
-import com.kili.jasync.consumer.ConsumerConfiguration;
+import com.kili.jasync.consumer.WorkerConfiguration;
 import com.kili.jasync.serialization.SerializationStrategy;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -73,7 +74,7 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
-   public <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, ConsumerConfiguration configuration) throws JAsyncException {
+   public <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, WorkerConfiguration configuration) throws JAsyncException {
       logger.info("Initializing rabbit worker {}", worker);
 
       Channel consumerChannel;
@@ -104,12 +105,25 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
+   public <T> void initializeMessageHandler(
+         Consumer<T> worker,
+         Class<T> itemClass,
+         MessageHandlerConfiguration configuration) {
+      throw new UnsupportedOperationException("Not yet supported!");
+   }
+
+   @Override
    public <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException {
       var worker = (RabbitWorker<T>) workers.get(workerType);
       if (worker == null) {
          throw new JAsyncException(workerType + " is not registered as a worker!");
       }
       worker.queueWorkItem(workItem);
+   }
+
+   @Override
+   public <T> void sendRoutedMessage(String route, T message) {
+      throw new UnsupportedOperationException("Not yet supported!");
    }
 
    @Override

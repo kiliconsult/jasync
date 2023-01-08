@@ -1,6 +1,7 @@
 package com.kili.jasync;
 
-import com.kili.jasync.consumer.ConsumerConfiguration;
+import com.kili.jasync.consumer.MessageHandlerConfiguration;
+import com.kili.jasync.consumer.WorkerConfiguration;
 import com.kili.jasync.environment.AsyncEnvironment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ import java.time.Duration;
  * Tests that a worker has the expected functionality. Environments can provide additional functionality
  * that should be tested by the environment itself.
  */
-public abstract class AbstractWorkerContractTest {
+public abstract class AbstractContractTest {
 
    public abstract AsyncEnvironment createEnvironment() throws JAsyncException;
 
@@ -23,13 +24,13 @@ public abstract class AbstractWorkerContractTest {
    }
 
    @Test
-   public void testWorkerHandlesAllMessages() throws JAsyncException, InterruptedException {
+   public void testWorkerHandlesAllWorkItems() throws JAsyncException, InterruptedException {
       try (AsyncEnvironment asyncEnvironment = createEnvironment()) {
          TestConsumer worker = new TestConsumer() {};
          asyncEnvironment.initializeWorker(
                worker,
                TestMessage.class,
-               new ConsumerConfiguration.Builder().setNumberOfConsumers(10).build());
+               new WorkerConfiguration.Builder().setNumberOfConsumers(10).build());
 
          int messagesCount = 100;
          for (int i = 0; i < messagesCount; i++) {
@@ -48,7 +49,7 @@ public abstract class AbstractWorkerContractTest {
          asyncEnvironment.initializeWorker(
                worker,
                TestMessage.class,
-               new ConsumerConfiguration.Builder().setNumberOfConsumers(10).build());
+               new WorkerConfiguration.Builder().setNumberOfConsumers(10).build());
       }
 
       try {
@@ -72,7 +73,7 @@ public abstract class AbstractWorkerContractTest {
          asyncEnvironment.initializeWorker(
                worker,
                TestMessage.class,
-               new ConsumerConfiguration.Builder().setNumberOfConsumers(numberOfConsumers).build());
+               new WorkerConfiguration.Builder().setNumberOfConsumers(numberOfConsumers).build());
 
          int messagesCount = 1000;
          for (int i = 0; i < messagesCount; i++) {
@@ -81,5 +82,18 @@ public abstract class AbstractWorkerContractTest {
 
          TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(30));
       }
+   }
+
+   protected static void waitForQueueSizeLEQ(
+         TestConsumer slowWorker,
+         AsyncEnvironment firstEnvironment,
+         int expectedQueueSize) throws InterruptedException {
+      TestHelper.wait(() -> {
+         try {
+            return firstEnvironment.getQueueInfo(slowWorker.getClass()).queueSize() <= expectedQueueSize;
+         } catch (JAsyncException e) {
+            throw new RuntimeException(e);
+         }
+      }, Duration.ofSeconds(10));
    }
 }

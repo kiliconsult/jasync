@@ -11,7 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-class RabbitMQAsyncEnvironmentTest extends AbstractPersistedWorkerContractTest {
+class RabbitMQAsyncEnvironmentTest extends AbstractPersistedContractTest {
 
    @Container
    public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(DockerImageName.parse("rabbitmq"))

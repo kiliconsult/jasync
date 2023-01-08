@@ -1,10 +1,11 @@
 package com.kili.jasync.consumer;
 
 
-public class ConsumerConfiguration {
+public class WorkerConfiguration {
    private int numberOfConsumers;
 
-   private ConsumerConfiguration() {
+   public WorkerConfiguration(int numberOfConsumers) {
+      this.numberOfConsumers = numberOfConsumers;
    }
 
    public int getNumberOfConsumers() {
@@ -33,10 +34,11 @@ public class ConsumerConfiguration {
        * Build a configuration
        * @return a new config
        */
-      public ConsumerConfiguration build() {
-         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
-         consumerConfiguration.numberOfConsumers = numberOfConsumers;
-         return consumerConfiguration;
+      public WorkerConfiguration build() {
+         if (numberOfConsumers <= 0) {
+            throw new IllegalArgumentException("Number of consumers should be a positive number");
+         }
+         return new WorkerConfiguration(numberOfConsumers);
       }
    }
 }

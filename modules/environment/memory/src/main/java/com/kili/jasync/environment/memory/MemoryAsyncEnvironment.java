@@ -3,8 +3,9 @@ package com.kili.jasync.environment.memory;
 import com.kili.jasync.QueueInfo;
 import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.JAsyncException;
+import com.kili.jasync.consumer.MessageHandlerConfiguration;
 import com.kili.jasync.environment.AsyncEnvironment;
-import com.kili.jasync.consumer.ConsumerConfiguration;
+import com.kili.jasync.consumer.WorkerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
    private Map<Class<? extends Consumer>, MemoryWorker<?>> workers = new HashMap<>();
 
    @Override
-   public <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, ConsumerConfiguration configuration) {
+   public <T> void initializeWorker(Consumer<T> worker, Class<T> itemClass, WorkerConfiguration configuration) {
       logger.info("Initializing memory worker {}", worker);
 
       var consumerManager = new ConsumerManager<>(worker, configuration.getNumberOfConsumers());
@@ -35,12 +36,25 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
+   public <T> void initializeMessageHandler(
+         Consumer<T> worker,
+         Class<T> itemClass,
+         MessageHandlerConfiguration configuration) {
+      throw new UnsupportedOperationException("Not yet supported!");
+   }
+
+   @Override
    public <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException {
       var memoryWorker = (MemoryWorker<T>) workers.get(workerType);
       if (memoryWorker == null) {
          throw new JAsyncException(workerType + " is not registered as a worker!");
       }
       memoryWorker.queueWorkItem(workItem);
+   }
+
+   @Override
+   public <T> void sendRoutedMessage(String route, T message) {
+      throw new UnsupportedOperationException("Not yet supported!");
    }
 
    @Override
