@@ -20,11 +20,11 @@ class RabbitPublisher {
    private static final Logger logger = LoggerFactory.getLogger(RabbitPublisher.class);
    private static final String DEFAULT_EXCHANGE = "";
    private static final int PUBLISH_TIMEOUT = 5_000;
-   private ObjectPool<Channel> publishChannelPool;
-   private SerializationStrategy serializationStrategy;
+   private final ObjectPool<Channel> publishChannelPool;
+   private final SerializationStrategy serializationStrategy;
 
-   private Set<String> declaredQueues = new HashSet<>();
-   private Set<String> declaredExchanges = new HashSet<>();
+   private final Set<String> declaredQueues = new HashSet<>();
+   private final Set<String> declaredExchanges = new HashSet<>();
 
    public RabbitPublisher(ObjectPool<Channel> publishChannelPool, SerializationStrategy serializationStrategy) {
       this.publishChannelPool = publishChannelPool;
@@ -51,7 +51,7 @@ class RabbitPublisher {
                channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);
                declaredExchanges.add(exchange);
             } catch (IOException e) {
-               throw new RuntimeException("Could not decare exchange " + exchange, e);
+               throw new RuntimeException("Could not declare exchange " + exchange, e);
             }
          }
       });
