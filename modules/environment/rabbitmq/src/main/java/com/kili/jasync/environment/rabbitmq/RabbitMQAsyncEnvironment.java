@@ -7,6 +7,7 @@ import com.kili.jasync.consumer.MessageHandlerConfiguration;
 import com.kili.jasync.consumer.NamedThreadFactory;
 import com.kili.jasync.environment.AsyncEnvironment;
 import com.kili.jasync.consumer.WorkerConfiguration;
+import com.kili.jasync.environment.Exchange;
 import com.kili.jasync.serialization.SerializationStrategy;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -28,6 +29,7 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
    private final Map<Class<? extends Consumer>, RabbitWorker<?>> workers = new HashMap<>();
    private final SerializationStrategy serializationStrategy;
    private GenericObjectPool<Channel> publishChannelPool;
+   private final RabbitPublisher routedPublisher;
    private GenericObjectPool<Channel> queueInfoChannelPool;
    private Set<Connection> allConnections = new HashSet<>();
    private UUID uuid;
@@ -82,6 +84,7 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
       this.serializationStrategy = serializationStrategy;
       this.publishChannelPool = publishChannelPool;
       this.queueInfoChannelPool = queueInfoChannelPool;
+      this.routedPublisher = new RabbitPublisher(publishChannelPool, serializationStrategy);
    }
 
    @Override
@@ -98,7 +101,7 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
                   return "worker." + consumer.getClass().getName();
                }
             });
-      RabbitPublisher<T> rabbitPublisher = new RabbitPublisher<>("", publishChannelPool, serializationStrategy);
+      RabbitPublisher rabbitPublisher = new RabbitPublisher(publishChannelPool, serializationStrategy);
 
       var rabbitWorker = new RabbitWorker<>(
             rabbitConsumer,
@@ -155,8 +158,13 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
-   public <T> void sendRoutedMessage(String route, T message) {
-      throw new UnsupportedOperationException("Not yet supported!");
+   public <T> void sendRoutedMessage(String route, T message) throws JAsyncException {
+      Exchange exchange = message.getClass().getDeclaredAnnotation(Exchange.class);
+      if (exchange == null || exchange.value() == null || exchange.value().trim().length() == 0) {
+         throw new JAsyncException("Found no exchange on the message. Expected @Exchange annotation with name of the exchange!");
+      }
+
+      routedPublisher.publishRouted(message, exchange.value(), route);
    }
 
    @Override

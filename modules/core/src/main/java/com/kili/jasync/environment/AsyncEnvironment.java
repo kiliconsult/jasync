@@ -42,7 +42,7 @@ public interface AsyncEnvironment extends AutoCloseable {
     * @param message the message
     * @param <T> type of the message
     */
-   <T> void sendRoutedMessage(String route, T message);
+   <T> void sendRoutedMessage(String route, T message) throws JAsyncException;
 
    /**
     * Get information about the queue for a given consumer

@@ -12,11 +12,11 @@ class RabbitWorker<T> {
    
    private static Logger logger = LoggerFactory.getLogger(RabbitWorker.class);
    private final RabbitConsumer<T> consumer;
-   private final RabbitPublisher<T> publisher;
+   private final RabbitPublisher publisher;
 
    public RabbitWorker(
          RabbitConsumer<T> consumer,
-         RabbitPublisher<T> publisher) throws JAsyncException {
+         RabbitPublisher publisher) throws JAsyncException {
       this.consumer = consumer;
       this.publisher = publisher;
    }

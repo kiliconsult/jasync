@@ -7,6 +7,8 @@ Using messaging for communication between services or using background tasks sho
 This project aims at reducing the cognitive load for developers working with these things.
 
 ## Supported environments
+Environments are set up as *at least once*.
+
 - Memory
 - RabbitMQ
 - Kafka (Coming up)
@@ -74,7 +76,4 @@ public AsyncEnvironment createEnvironment() throws JAsyncException {
 }
 ```
 
-RabbitMQ environments also works across JVMs. You can have multiple instances of your application sharing the work of 
-the same worker queues.
-
-This environment is by default set up with durable queues to remember messages between startup and close downs.
+RabbitMQ is set up with sane defaults to ensure a healthe environment and that messages are handled "At least once".
