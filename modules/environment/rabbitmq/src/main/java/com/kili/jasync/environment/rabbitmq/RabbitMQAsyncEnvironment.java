@@ -54,8 +54,8 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
 
       var publishChannelPool = new GenericObjectPool<>(new RabbitChannelFactory(globalPublisherConnection));
       publishChannelPool.setMinIdle(1);
-      publishChannelPool.setMaxIdle(3);
-      publishChannelPool.setMaxTotal(5);
+      publishChannelPool.setMaxIdle(rabbitMQConfiguration.getPublisherPoolSize() > 1 ? rabbitMQConfiguration.getPublisherPoolSize() / 2 : 1);
+      publishChannelPool.setMaxTotal(rabbitMQConfiguration.getPublisherPoolSize());
 
       var queueInfoChannelPool = new GenericObjectPool<>(new RabbitChannelFactory(globalQueueInfoConnection));
       publishChannelPool.setMinIdle(1);

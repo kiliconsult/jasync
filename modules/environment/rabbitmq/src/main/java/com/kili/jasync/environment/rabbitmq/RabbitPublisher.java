@@ -37,6 +37,7 @@ class RabbitPublisher<T> {
          channel = publishChannelPool.borrowObject();
          channel.queueDeclare(queueName, true, false, false, Map.of());
          channel.basicPublish(exchangeName, queueName, null, serialized);
+         channel.waitForConfirmsOrDie(5_000);
       } catch (NoSuchElementException e) {
          throw new JAsyncException("Publisher is too busy", e);
       } catch (Exception e) {

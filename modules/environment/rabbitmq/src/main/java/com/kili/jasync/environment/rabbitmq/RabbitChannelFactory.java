@@ -16,7 +16,9 @@ class RabbitChannelFactory extends BasePooledObjectFactory<Channel> {
 
    @Override
    public Channel create() throws Exception {
-      return connection.createChannel();
+      Channel channel = connection.createChannel();
+      channel.confirmSelect();
+      return channel;
    }
 
    @Override
