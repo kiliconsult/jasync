@@ -58,7 +58,7 @@ public class MemoryAsyncEnvironment implements AsyncEnvironment {
    }
 
    @Override
-   public QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException {
+   public <T> QueueInfo getQueueInfo(Class<? extends Consumer<T>> consumerType, Class<T> messageType) throws JAsyncException {
       var consumer = (MemoryWorker<?>) workers.get(consumerType);
       if (consumer == null) {
          throw new JAsyncException(consumer + " is not registered!");

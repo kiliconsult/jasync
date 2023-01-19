@@ -1,5 +1,8 @@
 package com.kili.jasync;
 
+import com.kili.jasync.consumer.Consumer;
+import com.kili.jasync.environment.AsyncEnvironment;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -29,5 +32,20 @@ public class TestHelper {
          Thread.sleep(10);
       }
       throw new RuntimeException("Check did not finish in time");
+   }
+
+   protected static <T> void waitForQueueSizeLEQ(
+         Class<? extends Consumer<T>> consumerClass,
+         Class<T> messageClazz,
+         AsyncEnvironment environment,
+         int expectedQueueSize) throws InterruptedException {
+      TestHelper.wait(() -> {
+         try {
+            QueueInfo queueInfo = environment.getQueueInfo(consumerClass, messageClazz);
+            return queueInfo.queueSize() <= expectedQueueSize;
+         } catch (JAsyncException e) {
+            throw new RuntimeException(e);
+         }
+      }, Duration.ofSeconds(10));
    }
 }

@@ -1,5 +1,6 @@
 package com.kili.jasync;
 
+import com.kili.jasync.consumer.Consumer;
 import com.kili.jasync.consumer.WorkerConfiguration;
 import com.kili.jasync.environment.AsyncEnvironment;
 import org.junit.jupiter.api.Assertions;
@@ -81,18 +82,5 @@ public abstract class AbstractContractTest {
 
          TestHelper.wait(numberOfConsumers, () -> worker.getThreadNames().size(), Duration.ofSeconds(30));
       }
-   }
-
-   protected static void waitForQueueSizeLEQ(
-         TestConsumer slowWorker,
-         AsyncEnvironment firstEnvironment,
-         int expectedQueueSize) throws InterruptedException {
-      TestHelper.wait(() -> {
-         try {
-            return firstEnvironment.getQueueInfo(slowWorker.getClass()).queueSize() <= expectedQueueSize;
-         } catch (JAsyncException e) {
-            throw new RuntimeException(e);
-         }
-      }, Duration.ofSeconds(10));
    }
 }

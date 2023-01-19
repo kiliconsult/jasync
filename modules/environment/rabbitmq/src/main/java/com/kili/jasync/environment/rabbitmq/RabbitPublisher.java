@@ -18,7 +18,6 @@ import java.util.function.Consumer;
 class RabbitPublisher {
 
    private static final Logger logger = LoggerFactory.getLogger(RabbitPublisher.class);
-   private static final String DEFAULT_EXCHANGE = "";
    private static final int PUBLISH_TIMEOUT = 5_000;
    private final ObjectPool<Channel> publishChannelPool;
    private final SerializationStrategy serializationStrategy;
@@ -31,33 +30,15 @@ class RabbitPublisher {
       this.serializationStrategy = serializationStrategy;
    }
 
-   <T> void publishDirect(T workItem, String queueName) throws JAsyncException {
-      publish(workItem, queueName, DEFAULT_EXCHANGE, (Channel channel) -> {
-         if (!declaredQueues.contains(queueName)) {
-            try {
-               channel.queueDeclare(queueName, true, false, false, Map.of());
-               declaredQueues.add(queueName);
-            } catch (IOException e) {
-               throw new RuntimeException("Could not declare queue " + queueName, e);
-            }
-         }
-      });
+   <T> void publishDirect(T workItem, String exchange, String queueName) throws JAsyncException {
+      publish(workItem, queueName, exchange, BuiltinExchangeType.DIRECT);
    }
 
    <T> void publishRouted(T message, String exchange, String route) throws JAsyncException {
-      publish(message, route, exchange, channel -> {
-         if (!declaredExchanges.contains(exchange)) {
-            try {
-               channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);
-               declaredExchanges.add(exchange);
-            } catch (IOException e) {
-               throw new RuntimeException("Could not declare exchange " + exchange, e);
-            }
-         }
-      });
+      publish(message, route, exchange, BuiltinExchangeType.TOPIC);
    }
 
-   private <T> void publish(T message, String route, String exchange, Consumer<Channel> before) throws JAsyncException {
+   private <T> void publish(T message, String route, String exchange, BuiltinExchangeType exchangeType) throws JAsyncException {
       byte[] serialized;
       try {
          serialized = serializationStrategy.serialize(message);
@@ -68,7 +49,10 @@ class RabbitPublisher {
       Channel channel = null;
       try {
          channel = publishChannelPool.borrowObject();
-         before.accept(channel);
+         if (!declaredExchanges.contains(exchange)) {
+            channel.exchangeDeclare(exchange, exchangeType, true);
+            declaredExchanges.add(exchange);
+         }
          channel.basicPublish(exchange, route, null, serialized);
          channel.waitForConfirmsOrDie(PUBLISH_TIMEOUT);
       } catch (NoSuchElementException e) {

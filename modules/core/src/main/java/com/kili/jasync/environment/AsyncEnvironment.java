@@ -24,8 +24,9 @@ public interface AsyncEnvironment extends AutoCloseable {
     * @param consumer the consumer of the message
     * @param itemClass the work item type
     * @param configuration configuration of the handler
+    * @param <T> the type of messages that are handled
     */
-   <T> void initializeMessageHandler(Consumer<T> consumer, Class<T> itemClass, MessageHandlerConfiguration configuration);
+   <T> void initializeMessageHandler(Consumer<T> consumer, Class<T> itemClass, MessageHandlerConfiguration configuration) throws JAsyncException;
 
    /**
     * Add work item to be handled later by a worker
@@ -37,7 +38,7 @@ public interface AsyncEnvironment extends AutoCloseable {
    <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException;
 
    /**
-    * Send a message with a route. The message will be directed to the bound consumers by the implemented backend.
+    * Send a message with a route. The message will be directed to the bound message handlers by the implemented backend.
     * @param route the route
     * @param message the message
     * @param <T> type of the message
@@ -45,10 +46,11 @@ public interface AsyncEnvironment extends AutoCloseable {
    <T> void sendRoutedMessage(String route, T message) throws JAsyncException;
 
    /**
-    * Get information about the queue for a given consumer
+    * Get information like queue size for the queue for a given consumer handling a type of messages
     * @param consumerType the type of the consumer
+    * @param messageType the type of messages handled by the consumer
     */
-   QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException;
+   <T> QueueInfo getQueueInfo(Class<? extends Consumer<T>> consumerType, Class<T> messageType) throws JAsyncException;
 
    /**
     * Closes the environment and all resources used by the environment.

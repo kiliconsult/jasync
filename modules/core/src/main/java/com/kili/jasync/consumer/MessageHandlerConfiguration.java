@@ -1,6 +1,7 @@
 package com.kili.jasync.consumer;
 
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public class MessageHandlerConfiguration {
    }
 
    public Set<String> getRoutes() {
-      return routes;
+      return Collections.unmodifiableSet(routes);
    }
 
    public static class Builder {
@@ -45,7 +46,7 @@ public class MessageHandlerConfiguration {
        * @param route the route to listen for
        * @return this builder
        */
-      public Builder listenToRoute(String route) {
+      public Builder addRoute(String route) {
          routes.add(route);
          return this;
       }

@@ -1,12 +1,9 @@
 package com.kili.jasync.environment.rabbitmq;
 
 import com.kili.jasync.QueueInfo;
-import com.kili.jasync.consumer.Consumer;
+import com.kili.jasync.consumer.*;
 import com.kili.jasync.JAsyncException;
-import com.kili.jasync.consumer.MessageHandlerConfiguration;
-import com.kili.jasync.consumer.NamedThreadFactory;
 import com.kili.jasync.environment.AsyncEnvironment;
-import com.kili.jasync.consumer.WorkerConfiguration;
 import com.kili.jasync.environment.Exchange;
 import com.kili.jasync.serialization.SerializationStrategy;
 import com.rabbitmq.client.AMQP;
@@ -26,14 +23,13 @@ import java.util.concurrent.*;
 public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
 
    private static final Logger logger = LoggerFactory.getLogger(RabbitMQAsyncEnvironment.class);
-   private final Map<Class<? extends Consumer>, RabbitWorker<?>> workers = new HashMap<>();
+   private ConsumerRegistry<RabbitConsumer<?>> consumerRegistry = new ConsumerRegistry<>();
+   private final RabbitPublisher publisher;
    private final SerializationStrategy serializationStrategy;
-   private GenericObjectPool<Channel> publishChannelPool;
-   private final RabbitPublisher routedPublisher;
    private GenericObjectPool<Channel> queueInfoChannelPool;
    private Set<Connection> allConnections = new HashSet<>();
-   private UUID uuid;
    private ConnectionFactory connectionFactory;
+   private UUID uuid;
 
    public static RabbitMQAsyncEnvironment create(RabbitMQConfiguration rabbitMQConfiguration) throws JAsyncException {
       Connection globalPublisherConnection;
@@ -77,14 +73,13 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
          HashSet<Connection> connectionsSet,
          SerializationStrategy serializationStrategy,
          GenericObjectPool<Channel> publishChannelPool,
-         GenericObjectPool<Channel> queueInfoChannelPool) throws JAsyncException {
+         GenericObjectPool<Channel> queueInfoChannelPool) {
       this.uuid = uuid;
       this.connectionFactory = connectionFactory;
       this.allConnections = connectionsSet;
       this.serializationStrategy = serializationStrategy;
-      this.publishChannelPool = publishChannelPool;
       this.queueInfoChannelPool = queueInfoChannelPool;
-      this.routedPublisher = new RabbitPublisher(publishChannelPool, serializationStrategy);
+      this.publisher = new RabbitPublisher(publishChannelPool, serializationStrategy);
    }
 
    @Override
@@ -101,17 +96,22 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
                   return "worker." + consumer.getClass().getName();
                }
             });
-      RabbitPublisher rabbitPublisher = new RabbitPublisher(publishChannelPool, serializationStrategy);
 
-      var rabbitWorker = new RabbitWorker<>(
-            rabbitConsumer,
-            rabbitPublisher);
-      workers.put(worker.getClass(), rabbitWorker);
-      rabbitWorker.start();
+
+      Class<? extends Consumer<T>> aClass = (Class<? extends Consumer<T>>) worker.getClass();
+      consumerRegistry.registerConsumer(aClass, itemClass, rabbitConsumer);
+
+      String exchangeName = "";
+      Exchange exchange = itemClass.getDeclaredAnnotation(Exchange.class);
+      if (exchange != null && exchange.value() != null && exchange.value().trim().length() != 0) {
+         exchangeName = exchange.value();
+      }
+
+      rabbitConsumer.startDirectConsumer(exchangeName, rabbitConsumer.getQueueName());
    }
 
    private <T> RabbitConsumer<T> createRabbitConsumer(
-         Consumer<T> worker,
+         Consumer<T> consumer,
          Class<T> itemClass,
          int numberOfConsumers,
          QueueNameStrategy queueNameStrategy) throws JAsyncException {
@@ -123,14 +123,14 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
                0,
                TimeUnit.MILLISECONDS,
                new LinkedBlockingQueue<>(),
-               new NamedThreadFactory(worker.getClass().getSimpleName()));
+               new NamedThreadFactory(consumer.getClass().getSimpleName()));
          var consumerConnection = connectionFactory.newConnection(executorService);
          allConnections.add(consumerConnection);
          var consumerChannel = consumerConnection.createChannel();
          rabbitConsumer = new RabbitConsumer<>(
                consumerChannel,
                executorService,
-               worker,
+               consumer,
                itemClass,
                serializationStrategy,
                queueNameStrategy);
@@ -142,19 +142,49 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
 
    @Override
    public <T> void initializeMessageHandler(
-         Consumer<T> worker,
+         Consumer<T> consumer,
          Class<T> itemClass,
-         MessageHandlerConfiguration configuration) {
-      throw new UnsupportedOperationException("Not yet supported!");
+         MessageHandlerConfiguration configuration) throws JAsyncException {
+      logger.info("Initializing rabbit message handler {}", consumer);
+
+      Exchange exchange = itemClass.getDeclaredAnnotation(Exchange.class);
+      if (exchange == null || exchange.value() == null || exchange.value().trim().length() == 0) {
+         throw new JAsyncException("Found no exchange on the message type. Expected @Exchange annotation with name of the exchange!");
+      }
+      String exchangeName = exchange.value();
+
+      RabbitConsumer<T> rabbitConsumer = createRabbitConsumer(
+            consumer,
+            itemClass,
+            configuration.getNumberOfConsumers(),
+            new QueueNameStrategy() {
+               @Override
+               public <T> String getQueueName(Consumer<T> consumer, Class<T> messageType) {
+                  return "message." + consumer.getClass().getName() + "." + itemClass.getName();
+               }
+            });
+
+      Class<? extends Consumer<T>> aClass = (Class<? extends Consumer<T>>) consumer.getClass();
+      consumerRegistry.registerConsumer(aClass, itemClass, rabbitConsumer);
+
+      rabbitConsumer.startRoutedConsumer(exchangeName, configuration.getRoutes());
    }
 
    @Override
    public <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException {
-      var worker = (RabbitWorker<T>) workers.get(workerType);
+      String exchangeName = "";
+      Exchange exchange = workItem.getClass().getDeclaredAnnotation(Exchange.class);
+      if (exchange != null && exchange.value() != null && exchange.value().trim().length() != 0) {
+         exchangeName = exchange.value();
+      }
+
+      Class<T> aClass = (Class<T>) workItem.getClass();
+      var worker = (RabbitConsumer<T>) consumerRegistry.getConsumer(workerType, aClass);
       if (worker == null) {
          throw new JAsyncException(workerType + " is not registered as a worker!");
       }
-      worker.queueWorkItem(workItem);
+
+      publisher.publishDirect(workItem, exchangeName, worker.getQueueName());
    }
 
    @Override
@@ -164,12 +194,12 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
          throw new JAsyncException("Found no exchange on the message. Expected @Exchange annotation with name of the exchange!");
       }
 
-      routedPublisher.publishRouted(message, exchange.value(), route);
+      publisher.publishRouted(message, exchange.value(), route);
    }
 
    @Override
-   public QueueInfo getQueueInfo(Class<? extends Consumer<?>> consumerType) throws JAsyncException {
-      var consumer = (RabbitWorker<?>) workers.get(consumerType);
+   public <T> QueueInfo getQueueInfo(Class<? extends Consumer<T>> consumerType, Class<T> messageType) throws JAsyncException {
+      var consumer = (RabbitConsumer<?>) consumerRegistry.getConsumer(consumerType, messageType);
       if (consumer == null) {
          throw new JAsyncException(consumerType + " is not registered!");
       }
@@ -194,5 +224,6 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
       for (Connection connection : allConnections) {
          connection.abort();
       }
+      consumerRegistry = new ConsumerRegistry<>();
    }
 }
