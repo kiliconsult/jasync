@@ -1,5 +1,6 @@
 package com.kili.jasync.consumer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -18,6 +19,10 @@ public final class ConsumerRegistry<O> {
    public <T> O getConsumer(Class<? extends Consumer<T>> consumerClass, Class<T> messageType) {
       Key<T> key = new Key<>(consumerClass, messageType);
       return registry.get(key);
+   }
+
+   public Collection<O> values() {
+      return registry.values();
    }
 
    public static class Key<T> {

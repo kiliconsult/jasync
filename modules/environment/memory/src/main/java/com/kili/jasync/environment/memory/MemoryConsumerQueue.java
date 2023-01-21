@@ -8,16 +8,16 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 
-class MemoryWorker<T> implements Runnable {
+class MemoryConsumerQueue<T> implements Runnable {
 
 
-   private static Logger logger = LoggerFactory.getLogger(MemoryWorker.class);
+   private static Logger logger = LoggerFactory.getLogger(MemoryConsumerQueue.class);
    private final Consumer<T> worker;
    private final ConsumerManager<T> consumerManager;
    private final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
    private boolean closed;
 
-   public MemoryWorker(Consumer<T> worker, ConsumerManager<T> consumerManager) {
+   public MemoryConsumerQueue(Consumer<T> worker, ConsumerManager<T> consumerManager) {
       this.worker = worker;
       this.consumerManager = consumerManager;
    }
@@ -64,6 +64,6 @@ class MemoryWorker<T> implements Runnable {
    public void close() {
       closed = true;
       consumerManager.close();
-
+      Thread.currentThread().interrupt();
    }
 }
