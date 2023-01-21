@@ -22,7 +22,7 @@ Workers can help you control resource usage by throttling how many workers/consu
 at a time.
 
 <p align="center">
-    ![Workers](https://i.imgur.com/7YmWhFs.png)
+    <img src="https://i.imgur.com/7YmWhFs.png" alt="Workers">
 </p>
 
 ### Example code
