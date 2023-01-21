@@ -2,20 +2,31 @@
 
 ![Logo](https://i.imgur.com/QyFxWBc.png)
 
-Working with async tool like RabbitMQ or Kafka introduces yet another steep learning curve for developers. 
+Working with async tools like RabbitMQ or Kafka introduces yet another steep learning curve for developers. 
 Using messaging for communication between services or using background tasks should be simple.
-This project aims at reducing the cognitive load for developers working with these things.
+
+This project aims to reduce the cognitive load and make development streamlined and stress-free.
 
 ## Supported environments
 Environments are set up as *at least once*.
 
-- Memory
 - RabbitMQ
-- Kafka (Coming up)
+- Memory
 
-## Getting started
+## Getting started with workers
 
-We will create a simple work item and a worker that logs a message asynchronously.
+Workers are great for tasks that you want to offload to the background such that it does not interfere with the main thread, 
+which can keep serving other requests.
+
+Workers can help you control resource usage by throttling how many workers/consumers your application can handle 
+at a time.
+
+
+![Workers](/docs/worker.png)
+
+### Example code
+
+We will create a simple work item and a worker that simply logs a message asynchronously.
 
 The work items are simple records/beans:
 
@@ -61,7 +72,7 @@ void publish(String message) throws JAsyncException {
 
 ## Using RabbitMQ
 
-It is easy to use change the environment to RabbitMQ. Just change the AsyncEnvironment in the 
+It is easy to use change the environment to a RabbitMQ cluster. Just change the AsyncEnvironment in the 
 [Getting Started](#getting-started) to use the RabbitMQAsyncEnvironment.
 
 ```java
