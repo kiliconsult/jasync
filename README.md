@@ -22,7 +22,7 @@ Workers can help you control resource usage by throttling how many workers/consu
 at a time.
 
 
-![Workers](/docs/worker.png)
+![Workers](./docs/worker.png)
 
 ### Example code
 
