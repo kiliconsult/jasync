@@ -21,8 +21,9 @@ which can keep serving other requests.
 Workers can help you control resource usage by throttling how many workers/consumers your application can handle 
 at a time.
 
-
-![Workers](https://i.imgur.com/7YmWhFs.png)
+<p align="center">
+    ![Workers](https://i.imgur.com/7YmWhFs.png)
+</p>
 
 ### Example code
 
