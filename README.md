@@ -22,7 +22,7 @@ Workers can help you control resource usage by throttling how many workers/consu
 at a time.
 
 
-![Workers](https://raw.githubusercontent.com/kiliconsult/jasync/master/docs/worker.png)
+![Workers](https://i.imgur.com/7YmWhFs.png)
 
 ### Example code
 
