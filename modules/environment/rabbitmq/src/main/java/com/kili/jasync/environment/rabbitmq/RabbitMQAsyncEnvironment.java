@@ -23,6 +23,7 @@ import java.util.concurrent.*;
 public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
 
    private static final Logger logger = LoggerFactory.getLogger(RabbitMQAsyncEnvironment.class);
+   private static final String DEFAULT_EXCHANGE = "";
    private ConsumerRegistry<RabbitConsumer<?>> consumerRegistry = new ConsumerRegistry<>();
    private final RabbitPublisher publisher;
    private final SerializationStrategy serializationStrategy;
@@ -101,13 +102,17 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
       Class<? extends Consumer<T>> aClass = (Class<? extends Consumer<T>>) worker.getClass();
       consumerRegistry.registerConsumer(aClass, itemClass, rabbitConsumer);
 
-      String exchangeName = "";
+      String exchangeName = DEFAULT_EXCHANGE;
       Exchange exchange = itemClass.getDeclaredAnnotation(Exchange.class);
       if (exchange != null && exchange.value() != null && exchange.value().trim().length() != 0) {
          exchangeName = exchange.value();
       }
 
-      rabbitConsumer.startDirectConsumer(exchangeName, rabbitConsumer.getQueueName());
+      if (DEFAULT_EXCHANGE.equals(exchangeName)) {
+         rabbitConsumer.startDirectConsumer(exchangeName, rabbitConsumer.getQueueName());
+      } else {
+         rabbitConsumer.startRoutedConsumer(exchangeName, Collections.singleton(rabbitConsumer.getQueueName()));
+      }
    }
 
    private <T> RabbitConsumer<T> createRabbitConsumer(
@@ -172,7 +177,7 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
 
    @Override
    public <T> void addWorkItem(Class<? extends Consumer<T>> workerType, T workItem) throws JAsyncException {
-      String exchangeName = "";
+      String exchangeName = DEFAULT_EXCHANGE;
       Exchange exchange = workItem.getClass().getDeclaredAnnotation(Exchange.class);
       if (exchange != null && exchange.value() != null && exchange.value().trim().length() != 0) {
          exchangeName = exchange.value();
@@ -184,7 +189,11 @@ public class RabbitMQAsyncEnvironment implements AsyncEnvironment {
          throw new JAsyncException(workerType + " is not registered as a worker!");
       }
 
-      publisher.publishDirect(workItem, exchangeName, worker.getQueueName());
+      if (DEFAULT_EXCHANGE.equals(exchangeName)) {
+         publisher.publishDirect(workItem, exchangeName, worker.getQueueName());
+      } else {
+         publisher.publishRouted(workItem, exchangeName, worker.getQueueName());
+      }
    }
 
    @Override

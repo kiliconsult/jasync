@@ -53,7 +53,7 @@ public class ExampleConsumer implements Consumer<WorkItem> {
 ```
 
 Register the worker on an environment. Here we choose the memory environment, but this could be
-any environment:
+any supported environment:
 ```java
 void initialize() throws JAsyncException {
    AsyncEnvironment asyncEnvironment = new MemoryAsyncEnvironment();
@@ -70,6 +70,17 @@ void publish(String message) throws JAsyncException {
 }
 ```
 
+## Getting started with messages
+
+Messages are a form of asynchronous communication that are sent to an exchange, rather than a specific 
+recipient. The exchange then routes the message to any consumers that have subscribed to it. 
+This allows for decoupling between the sender and receiver, as the sender does not need to know who 
+the message is being sent to. This is different from a worker, where the sender and receiver have 
+a direct connection and specific knowledge of each other.
+
+### Example code
+
+TODO
 
 ## Using RabbitMQ
 
@@ -88,4 +99,4 @@ public AsyncEnvironment createEnvironment() throws JAsyncException {
 }
 ```
 
-RabbitMQ is set up with sane defaults to ensure a healthe environment and that messages are handled "At least once".
+RabbitMQ is set up with sane defaults to ensure a healthy environment and that messages are handled "At least once".
