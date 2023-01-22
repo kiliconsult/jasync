@@ -78,9 +78,52 @@ This allows for decoupling between the sender and receiver, as the sender does n
 the message is being sent to. This is different from a worker, where the sender and receiver have 
 a direct connection and specific knowledge of each other.
 
+Example of a message being sent after a customer placed an order:
+
+<p align="center">
+    <img src="https://i.imgur.com/05edytb.png" alt="Messaging">
+</p>
+
 ### Example code
 
-TODO
+We will create the order example from the picture above.
+
+```java
+@Exchange("orders")
+public record NewOrderMessage(String orderId) { }
+```
+
+And consumers are again implementations of the Consumer interface,
+
+```java
+import com.kili.jasync.consumer.Consumer;
+
+public class InvoiceConsumer implements Consumer<NewOrderMessage> {
+
+   @Override
+   public void consume(NewOrderMessage workItem) {
+      // Send invoice
+   }
+}
+```
+
+and the warehouse
+
+```java
+import com.kili.jasync.consumer.Consumer;
+
+public class WarehouseConsumer implements Consumer<NewOrderMessage> {
+
+   @Override
+   public void consume(NewOrderMessage workItem) {
+      // Update stocks 
+   }
+}
+```
+
+And so on.
+
+
 
 ## Using RabbitMQ
 
