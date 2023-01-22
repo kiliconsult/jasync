@@ -53,7 +53,7 @@ public class ExampleConsumer implements Consumer<WorkItem> {
 ```
 
 Register the worker on an environment. Here we choose the memory environment, but this could be
-any supported environment:
+any supported environment. Initialize JASYNC once in your application, for example on application startup.
 ```java
 void initialize() throws JAsyncException {
    AsyncEnvironment asyncEnvironment = new MemoryAsyncEnvironment();
@@ -90,45 +90,92 @@ We will create the order example from the picture above.
 
 ```java
 @Exchange("orders")
-public record NewOrderMessage(String orderId) { }
+public record CreatedOrderMessage(String orderId) { }
 ```
 
-And consumers are again implementations of the Consumer interface,
+The `@Exchange` annotation is needed for messages. This tells which exchange you want to publish messages to 
+or listen/consume messages from.
+
+#### Publish side
+
+If you were only to make the publishing side, then publishing this message would be
+
+```java
+void initialize() throws JAsyncException {
+   AsyncEnvironment asyncEnvironment = createAsyncEnvironment(); // A Rabbit, Memory or other supported environment
+   JAsyncRegistry.registerEnvironment("messaging", asyncEnvironment);
+}
+```
+
+```java
+void publish(String orderId) throws JAsyncException {
+   AsyncEnvironment asyncEnvironment = JAsyncRegistry.getEnvironment("messaging");
+   asyncEnvironment.sendRoutedMessage("order.created", new CreatedOrderMessage(orderId))
+}
+```
+
+#### Consumer side
+
+And consumers are again implementations of the Consumer interface. Here the invoice consumer
 
 ```java
 import com.kili.jasync.consumer.Consumer;
 
-public class InvoiceConsumer implements Consumer<NewOrderMessage> {
+public class InvoiceConsumer implements Consumer<CreatedOrderMessage> {
 
    @Override
-   public void consume(NewOrderMessage workItem) {
+   public void consume(CreatedOrderMessage message) {
       // Send invoice
    }
 }
 ```
 
-and the warehouse
+and the warehouse consumer
 
 ```java
 import com.kili.jasync.consumer.Consumer;
 
-public class WarehouseConsumer implements Consumer<NewOrderMessage> {
+public class WarehouseConsumer implements Consumer<CreatedOrderMessage> {
 
    @Override
-   public void consume(NewOrderMessage workItem) {
+   public void consume(CreatedOrderMessage message) {
       // Update stocks 
    }
 }
 ```
 
-And so on.
+The consumers would probably be split into different microservices, but could also live in a larger application together. 
+For simplicity this is a more monolithic application that can handle both the invoice and the warehouse domains.
 
+Again we initialize JASYNC once in the application on startup.
 
+```java
+void initialize() throws JAsyncException {
+   AsyncEnvironment asyncEnvironment = createAsyncEnvironment(); // A Rabbit, Memory or other supported environment
+   asyncEnvironment.initializeMessageHandler(
+      new InvoiceConsumer(),
+      CreatedOrderMessage.class,
+      new MessageHandlerConfiguration.Builder()
+         .addRoute("order.created")
+         .build());
+   asyncEnvironment.initializeMessageHandler(
+      new WarehouseConsumer(),
+      CreatedOrderMessage.class,
+      new MessageHandlerConfiguration.Builder()
+         .setNumberOfConsumers(5)
+         .addRoute("order.created")
+         .build());
+   JAsyncRegistry.registerEnvironment("messaging", asyncEnvironment);
+}
+```
+
+The consumers are now set up to listen to messages published to the `orders` exchange with the topic `order.created`. 
+Thus they will start getting messages from the publisher side we created above.
 
 ## Using RabbitMQ
 
 It is easy to use change the environment to a RabbitMQ cluster. Just change the AsyncEnvironment in the 
-[Getting Started](#getting-started) to use the RabbitMQAsyncEnvironment.
+[Getting Started](#getting-started-with-workers) to use the RabbitMQAsyncEnvironment.
 
 ```java
 public AsyncEnvironment createEnvironment() throws JAsyncException {
