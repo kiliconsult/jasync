@@ -172,6 +172,11 @@ void initialize() throws JAsyncException {
 The consumers are now set up to listen to messages published to the `orders` exchange with the topic `order.created`. 
 Thus they will start getting messages from the publisher side we created above.
 
+You can also use the two AMQP keywords:
+
+ - \# (hash) matches zero or more words, for example, “metrics.#” will match all routing keys that start with “metrics.”
+ - \* (star) matches one word, for example, “metrics.*.cpu” will match all routing keys that start with “metrics.” and end in “.cpu”.
+
 ## Using RabbitMQ
 
 It is easy to use change the environment to a RabbitMQ cluster. Just change the AsyncEnvironment in the 
