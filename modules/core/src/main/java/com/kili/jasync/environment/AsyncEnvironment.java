@@ -7,7 +7,8 @@ import com.kili.jasync.JAsyncException;
 import com.kili.jasync.consumer.Consumer;
 
 /**
- * An environment providing asynchronous functionality
+ * An environment providing asynchronous functionality. Environments are meant to be thread safe, and each unique
+ * environment should not need to be initialized more than once.
  */
 public interface AsyncEnvironment extends AutoCloseable {
 

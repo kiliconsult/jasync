@@ -5,11 +5,13 @@ import com.kili.jasync.JAsyncException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 class MemoryExchange {
 
    private final String name;
    private final HashMap<String, List<MemoryConsumerQueue<?>>> routedConsumers = new HashMap<>();
+   private final RouteToRegex routeToRegex = new RouteToRegex();
 
    public MemoryExchange(String name) {
       this.name = name;
@@ -27,7 +29,8 @@ class MemoryExchange {
 
    public <T> void sendRoutedMessage(String route, T message) throws JAsyncException {
       for (String knownRoutes : routedConsumers.keySet()) {
-         if (knownRoutes.equals(route)) {
+         Pattern pattern = routeToRegex.convertToRegex(knownRoutes);
+         if (pattern != null && pattern.matcher(route).find()) {
             List<MemoryConsumerQueue<?>> memoryConsumerQueues = routedConsumers.get(knownRoutes);
             for (MemoryConsumerQueue<?> memoryConsumerQueue : memoryConsumerQueues) {
                try {
@@ -40,4 +43,6 @@ class MemoryExchange {
          }
       }
    }
+
+
 }
